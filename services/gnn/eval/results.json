@@ -1,0 +1,67 @@
+{
+  "per_seed": [
+    {
+      "seed": 0,
+      "precision": 0.95,
+      "recall": 1.0,
+      "f1": 0.9743589743589743,
+      "auc": 0.9995300751879699,
+      "val_f1": 0.9615384615384616,
+      "test_n": 150,
+      "test_anomalies": 38
+    },
+    {
+      "seed": 1,
+      "precision": 0.96,
+      "recall": 0.96,
+      "f1": 0.96,
+      "auc": 0.99936,
+      "val_f1": 0.9824561403508771,
+      "test_n": 150,
+      "test_anomalies": 25
+    },
+    {
+      "seed": 2,
+      "precision": 0.8529411764705882,
+      "recall": 0.9666666666666667,
+      "f1": 0.90625,
+      "auc": 0.9980555555555556,
+      "val_f1": 1.0,
+      "test_n": 150,
+      "test_anomalies": 30
+    },
+    {
+      "seed": 3,
+      "precision": 0.9117647058823529,
+      "recall": 0.96875,
+      "f1": 0.9393939393939394,
+      "auc": 0.9992055084745762,
+      "val_f1": 0.9841269841269841,
+      "test_n": 150,
+      "test_anomalies": 32
+    },
+    {
+      "seed": 4,
+      "precision": 1.0,
+      "recall": 0.9696969696969697,
+      "f1": 0.9846153846153847,
+      "auc": 0.9997409997409997,
+      "val_f1": 0.967741935483871,
+      "test_n": 150,
+      "test_anomalies": 33
+    }
+  ],
+  "mean": {
+    "precision": 0.935,
+    "recall": 0.973,
+    "f1": 0.953,
+    "auc": 0.999
+  },
+  "std": {
+    "precision": 0.05,
+    "recall": 0.014,
+    "f1": 0.028,
+    "auc": 0.001
+  },
+  "note": "synthetic fund-flow data, held-out test labels (transductive), 5 seeds"
+}
