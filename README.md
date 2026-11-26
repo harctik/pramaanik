@@ -80,6 +80,14 @@ The stack comes up in under 3 minutes on a 16 GB laptop. Services:
 
 ---
 
+## Test sign-in (local only)
+
+When the static frontend is opened on `localhost`, `127.0.0.1` or `[::1]`, the sign-in page shows a test form. Use `admin` / `admin` to open the Admin portal with sample data.
+
+The form is hidden on any other address, including the live site. It is a testing shortcut, not an access control: the demo portals already run on a simulated session.
+
+---
+
 ## Smart Contracts (8 Contracts)
 
 | Contract | Purpose | Key Feature |
