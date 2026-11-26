@@ -63,6 +63,13 @@
     .zk-step .pipe-node { width: 12px; height: 12px; }
     pre.raw { max-height: 160px; overflow: auto; margin-top: 8px; padding: 12px; background: var(--wash); font: .75rem/1.5 var(--font-mono); white-space: pre-wrap; word-break: break-all; text-align: left; }
 
+    .test-login { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 32px; padding: 16px; border: 1px dashed var(--ink); }
+    .test-login[hidden] { display: none; }
+    .test-login p { flex: 1 1 100%; font-size: .8125rem; color: var(--text-secondary); }
+    .test-login label { flex: 1 1 180px; }
+    .test-login .error { color: var(--accent-danger); }
+    .test-login .error:empty { display: none; }
+
     @media (max-width: 900px) {
       .hero { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 40px; }
       .hero img { display: none; }
@@ -105,6 +112,15 @@
           <span>Sign-in with a Privado ID wallet, or simulate it</span>
         </div>
         <div id="roleGrid"></div>
+
+        <!-- Shown only when the page is opened on this computer. -->
+        <form class="test-login" id="testLogin" hidden novalidate>
+          <p><strong>Test sign-in.</strong> Appears only on this computer. It opens the Admin portal with sample data.</p>
+          <label><span class="field-label">Username</span><input class="input-base" name="username" autocomplete="off"></label>
+          <label><span class="field-label">Password</span><input class="input-base" name="password" type="password" autocomplete="off"></label>
+          <button type="submit" class="btn btn-primary">Sign in</button>
+          <p class="error" id="testLoginError" role="alert"></p>
+        </form>
 
         <div class="about">
           <div>
@@ -182,6 +198,21 @@
     document.getElementById('roleGrid').addEventListener('click', function (e) {
       var row = e.target.closest('[data-role]');
       if (row) selectRole(row.getAttribute('data-role'));
+    });
+
+    // Test sign-in: a convenience for local testing, not an access control.
+    var LOCAL_HOST = /^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(window.location.hostname);
+    var testForm = document.getElementById('testLogin');
+    testForm.hidden = !LOCAL_HOST;
+    testForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!LOCAL_HOST) return;
+      if (testForm.elements.username.value !== 'admin' || testForm.elements.password.value !== 'admin') {
+        document.getElementById('testLoginError').textContent = 'Wrong username or password.';
+        return;
+      }
+      PRAMAANIK.auth.setSession('did:polygonid:polygon:amoy:demo-admin', 'admin', true);
+      window.location.href = roleById('admin').href;
     });
 
     // auth.js is deferred, so look for a saved session once it has run.
