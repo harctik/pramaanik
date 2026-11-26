@@ -2,94 +2,114 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>PRAMAANIK · Trace Funds</title>
-  <meta name="description" content="PRAMAANIK Public Fund Transparency Dashboard">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡</text></svg>">
+  <title>PRAMAANIK · Trace funds</title>
+  <meta name="description" content="PRAMAANIK public fund transparency demo: trace a sample disbursement.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="bg-grid">
+<body>
   <div id="mobileHeader"></div>
   <aside class="sidebar" id="sidebar"></aside>
   <main class="main-content">
-    <h1 class="text-2xl font-bold mb-1">Trace Fund Flow</h1>
-    <p class="text-sm mb-6" style="color:var(--text-muted)">Follow any disbursement from Treasury to last mile with full on-chain audit trail</p>
-
-    <!-- Search -->
-    <div class="glass-card-static p-5 mb-6">
-      <div class="flex gap-3" style="flex-wrap:wrap">
-        <input class="input-base" style="flex:1;min-width:200px" placeholder="Enter TX ID, Scheme, or DID..." id="traceInput" value="0x7c2f...a3d1">
-        <button class="btn-primary btn-sm" onclick="renderTrail()">Trace</button>
+    <div class="page-head">
+      <div>
+        <h1>Trace funds</h1>
+        <p>Search the sample records by ID, scheme or recipient. One record has a full example history.</p>
       </div>
     </div>
 
-    <!-- Pipeline -->
-    <div class="glass-card-static p-5 mb-6">
-      <h2 class="font-bold text-sm mb-3">Disbursement Pipeline</h2>
-      <div style="display:flex;align-items:center;gap:0;padding:8px 0">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0"><div class="pipe-node done"></div><div class="text-xs" style="color:var(--text-muted)">Sanctioned</div></div>
-        <div class="pipe-line done"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0"><div class="pipe-node done"></div><div class="text-xs" style="color:var(--text-muted)">Oracle</div></div>
-        <div class="pipe-line done"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0"><div class="pipe-node done"></div><div class="text-xs" style="color:var(--text-muted)">Flagged</div></div>
-        <div class="pipe-line done"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0"><div class="pipe-node active"></div><div class="text-xs" style="color:var(--text-muted)">Frozen</div></div>
-        <div class="pipe-line"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0"><div class="pipe-node"></div><div class="text-xs" style="color:var(--text-muted)">Released</div></div>
-        <div class="pipe-line"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0"><div class="pipe-node"></div><div class="text-xs" style="color:var(--text-muted)">Anchored</div></div>
-      </div>
-    </div>
+    <form class="flex gap-3 flex-wrap mb-6" id="traceForm">
+      <input class="input-base flex-1" style="min-width:200px" id="traceInput" placeholder="ID, scheme or recipient" aria-label="Search records">
+      <button type="submit" class="btn btn-primary">Trace</button>
+    </form>
 
-    <!-- Timeline -->
-    <div class="glass-card-static p-5">
-      <h2 class="font-bold text-sm mb-4">Audit Trail</h2>
-      <div class="timeline" id="trailTimeline"></div>
-    </div>
+    <div id="traceResult" aria-live="polite"></div>
   </main>
   <script src="../js/data.js"></script>
   <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
   <script src="../js/sidebar.js"></script>
   <script>
-    PRAMAANIK.initPage('citizen','trace');
-    // Read TX ID from URL query param (from citizen dashboard row click)
-    var urlParams = new URLSearchParams(window.location.search);
-    var txFromUrl = urlParams.get('tx');
-    if (txFromUrl) document.getElementById('traceInput').value = txFromUrl;
-    function renderTrail() {
-      var query = (document.getElementById('traceInput').value || '').trim().toLowerCase();
-      var trail = PRAMAANIK.trail;
-      // Filter trail by input value if provided
-      if (query && query !== '0x7c2f...a3d1') {
-        trail = trail.filter(function(e) {
-          return e.txId.toLowerCase().indexOf(query) >= 0 ||
-                 e.title.toLowerCase().indexOf(query) >= 0 ||
-                 e.description.toLowerCase().indexOf(query) >= 0 ||
-                 e.actor.toLowerCase().indexOf(query) >= 0;
-        });
-      }
-      if (trail.length === 0) {
-        document.getElementById('trailTimeline').innerHTML = '<div class="p-4 text-center text-sm" style="color:var(--text-muted)">No matching trail events found for "' + query + '"</div>';
-        return;
-      }
-      document.getElementById('trailTimeline').innerHTML = trail.map(function(e, i) {
-        return '<div class="timeline-item' + (i===0?' latest':'') + '">' +
-          '<div class="flex items-center justify-between mb-1">' +
-            '<span class="font-bold text-sm">' + e.title + '</span>' +
-            '<span class="text-xs" style="color:var(--text-muted)">' + e.when + '</span>' +
-          '</div>' +
-          '<div class="text-xs mb-2" style="color:var(--text-muted)">' +
-            e.actor + ' · <span class="font-mono">' + e.txId + '</span>' +
-          '</div>' +
-          '<p class="text-sm" style="color:var(--text-secondary)">' + e.description + '</p>' +
-          '<div class="flex items-center gap-1 mt-2">' +
-            (e.verified
-              ? '<svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--accent-success)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span class="text-xs" style="color:var(--accent-success)">Verified on-chain</span>'
-              : '<span class="text-xs" style="color:var(--text-muted)">Pending verification</span>') +
-          '</div>' +
-        '</div>';
-      }).join('');
-    }
-    renderTrail();
+const P = PRAMAANIK, ui = P.ui, esc = ui.esc;
+P.initPage('citizen', 'trace');
+
+// The one record the sample data has a step-by-step history for
+const EXAMPLE_ID = '0x7c2f...a3d1';
+const input = document.getElementById('traceInput');
+const result = document.getElementById('traceResult');
+
+function record(d) {
+  return `
+  <section class="panel mb-6">
+    <div class="panel-head"><h2>Record</h2>${ui.badge(d.status)}</div>
+    <div class="panel-body">
+      <dl class="fields">
+        ${ui.field('ID', esc(d.id), true)}
+        ${ui.field('Amount', esc(d.amount))}
+        ${ui.field('Scheme', esc(d.scheme))}
+        ${ui.field('Stage', esc(ui.stageLabel(d.stage)))}
+        ${ui.field('Recipient', esc(d.recipient), true)}
+        ${ui.field('Checks', ui.checks(d))}
+      </dl>
+    </div>
+  </section>`;
+}
+
+function history() {
+  return `
+  <section class="panel">
+    <div class="panel-head"><h2>History</h2><span class="text-xs muted">Illustrative example, not read from a blockchain</span></div>
+    <div class="panel-body">
+      <ol class="timeline" style="list-style:none">
+        ${P.trail.map((s, i) => `
+          <li class="timeline-item${i === P.trail.length - 1 ? ' latest' : ''}">
+            <div class="record-head"><strong class="text-sm">${esc(s.title)}</strong><span class="text-xs muted whitespace-nowrap">${esc(s.when)}</span></div>
+            <div class="text-xs muted mb-2">${esc(s.actor)} · <span class="font-mono break-all">${esc(s.txId)}</span></div>
+            <p class="text-sm">${esc(s.description.replace(/`/g, ''))}</p>
+          </li>`).join('')}
+      </ol>
+    </div>
+  </section>`;
+}
+
+function trace(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    result.innerHTML = '<div class="panel empty">Enter an ID, scheme or recipient to search.</div>';
+    return;
+  }
+  const exact = P.disbursements.find(d => d.id.toLowerCase() === q);
+  const matches = exact ? [exact] : P.disbursements.filter(d => [d.id, d.scheme, d.recipient].some(v => v.toLowerCase().includes(q)));
+
+  if (!matches.length) {
+    result.innerHTML = '<div class="panel empty">No sample record matches “' + esc(query.trim()) + '”.</div>';
+  } else if (matches.length === 1) {
+    const d = matches[0];
+    result.innerHTML = record(d) + (d.id === EXAMPLE_ID ? history()
+      : '<p class="notice">The sample data has no step-by-step history for this record. <button type="button" class="row-link" data-trace="' + EXAMPLE_ID + '">View the example history</button></p>');
+  } else {
+    result.innerHTML = `
+      <section class="panel">
+        <div class="panel-head"><h2>${matches.length} matching records</h2></div>
+        <div class="rows">
+          ${matches.map(d => `
+            <div class="record-head">
+              <div class="min-w-0"><button type="button" class="row-link" data-trace="${esc(d.id)}">${esc(d.id)}</button><div class="text-sm">${esc(d.scheme)}</div><div class="text-xs muted">${esc(d.amount)}</div></div>
+              ${ui.badge(d.status)}
+            </div>`).join('')}
+        </div>
+      </section>`;
+  }
+}
+
+document.getElementById('traceForm').addEventListener('submit', e => { e.preventDefault(); trace(input.value); });
+result.addEventListener('click', e => {
+  const btn = e.target.closest('[data-trace]');
+  if (btn) { input.value = btn.dataset.trace; trace(input.value); }
+});
+
+input.value = new URLSearchParams(window.location.search).get('tx') || EXAMPLE_ID;
+trace(input.value);
   </script>
 </body>
 </html>

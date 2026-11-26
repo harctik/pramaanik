@@ -220,14 +220,20 @@
   // ── Session Info Bar ──────────────────────────────────────────────────
   // Returns HTML for a small session indicator (used in sidebar footer)
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
   function sessionInfoHtml() {
     const s = getSession();
     if (!s) return '';
+    const did = String(s.did || 'Unknown');
     return `
-      <div style="padding:8px 14px;border-radius:8px;background:rgba(99,102,241,0.04);border:1px solid var(--border-subtle);margin-bottom:8px">
-        <div class="text-xs" style="color:var(--text-muted)">Authenticated as</div>
-        <div class="text-xs font-mono truncate" style="color:var(--text-secondary);max-width:180px" title="${s.did}">${s.did ? s.did.slice(0, 24) + '…' : 'Unknown'}</div>
-        <div class="text-xs mt-1"><span class="badge badge-active" style="font-size:9px;padding:2px 8px">${s.role}</span></div>
+      <div class="session">
+        <div>Signed in as ${escapeHtml(s.role)} (demo)</div>
+        <div class="font-mono truncate" title="${escapeHtml(did)}">${escapeHtml(did.split(':').pop())}</div>
       </div>
     `;
   }
@@ -235,7 +241,9 @@
   // ── Export ─────────────────────────────────────────────────────────────
 
   window.PRAMAANIK = window.PRAMAANIK || {};
+  window.PRAMAANIK.escapeHtml = escapeHtml;
   window.PRAMAANIK.auth = {
+    escapeHtml,
     getSession,
     setSession,
     clearSession,
